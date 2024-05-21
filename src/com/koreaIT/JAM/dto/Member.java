@@ -11,7 +11,6 @@ public class Member {
 	String memberPass;
 	String memberName;
 	LocalDateTime regDate;
-	int temp;
 	
 	public Member(int lastMemberNumber, String memberId, String memberPass, String memberName) {
 		this.memberNumber = lastMemberNumber;

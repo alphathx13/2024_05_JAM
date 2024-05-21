@@ -6,6 +6,7 @@ import java.util.Scanner;
 
 import com.koreaIT.JAM.dto.Article;
 import com.koreaIT.JAM.dto.Member;
+import com.koreaIT.JAM.util.JDBC;
 
 public class Main {
 	public static int lastArticleId;
@@ -36,6 +37,11 @@ public class Main {
 				System.out.print("내용) ");
 				String body = sc.nextLine();
 				
+				JDBC.articleWrite(title, body);
+				
+//				JDBC jdbc = new JDBC;
+//				jdbc.articleWrite(title, body);
+				
 				System.out.println(lastArticleId + "번 게시물이 작성되었습니다.");
 				articles.add(new Article(lastArticleId++, title, body));
 			}
@@ -62,5 +68,4 @@ public class Main {
 		System.out.println("=== 프로그램 종료 ===");
 		sc.close();
 	}
-
 }
