@@ -1,7 +1,6 @@
 package com.koreaIT.JAM.util;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -11,20 +10,26 @@ import java.util.List;
 import com.koreaIT.JAM.dto.Article;
 
 public class JDBC {
-	private static final String URL = "jdbc:mysql://192.168.56.106:3306/JAM?useUnicode=true&characterEncoding=utf8&autoReconnect=true&serverTimezone=Asia/Seoul&useOldAliasMetadataBehavior=true&zeroDateTimeNehavior=convertToNull";
-	private static final String USER = "root";
-	private static final String PASSWORD = "123456a";
+	private final String URL;
+	private final String USER;
+	private final String PASSWORD;
+	public Connection conn;
+	private PreparedStatement pstmt;
+	private ResultSet rs;
+	
+	{
+		URL = "jdbc:mysql://192.168.56.106:3306/JAM?useUnicode=true&characterEncoding=utf8&autoReconnect=true&serverTimezone=Asia/Seoul&useOldAliasMetadataBehavior=true&zeroDateTimeNehavior=convertToNull";
+		USER = "root";
+		PASSWORD = "123456a";
+		pstmt = null;
+		rs = null;
+	}
 
-	public static void articleWrite(String title, String body) {
-		Connection conn = null;
-		PreparedStatement pstmt = null;
-
+	public void articleWrite(String title, String body) {
 		try {
-			conn = DriverManager.getConnection(URL, USER, PASSWORD);
-
 			String sql = "INSERT INTO article";
-			sql += " Set regDATE = NOW()";
-			sql += ", updateDATE = NOW()";
+			sql += " SET regDate = NOW()";
+			sql += ", updateDate = NOW()";
 			sql += ", title = '" + title + "'";
 			sql += ", `body` = '" + body + "';";
 
@@ -33,33 +38,11 @@ public class JDBC {
 
 		} catch (SQLException e) {
 			e.printStackTrace();
-		} finally {
-			if (pstmt != null) {
-				try {
-					pstmt.close();
-				} catch (SQLException e) {
-					e.printStackTrace();
-				}
-			}
-
-			if (conn != null) {
-				try {
-					conn.close();
-				} catch (SQLException e) {
-					e.printStackTrace();
-				}
-			}
-		}
+		} 
 	}
 
-	public static List<Article> articleList() {
-		Connection conn = null;
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-
+	public List<Article> articleList() {
 		try {
-			conn = DriverManager.getConnection(URL, USER, PASSWORD);
-
 			String sql = "SELECT * FROM article";
 			sql += " ORDER BY id DESC";
 
@@ -83,80 +66,28 @@ public class JDBC {
 
 		} catch (SQLException e) {
 			e.printStackTrace();
-		} finally {
-			if (pstmt != null) {
-				try {
-					pstmt.close();
-				} catch (SQLException e) {
-					e.printStackTrace();
-				}
-			}
-
-			if (conn != null) {
-				try {
-					conn.close();
-				} catch (SQLException e) {
-					e.printStackTrace();
-				}
-			}
-
-			if (rs != null) {
-				try {
-					rs.close();
-				} catch (SQLException e) {
-					e.printStackTrace();
-				}
-			}
-
 		}
 		return null;
 	}
 
-	public static void articleModify(String articleNumber, String title, String body) {
-		Connection conn = null;
-		PreparedStatement pstmt = null;
-
+	public void articleModify(String articleNumber, String title, String body) {
 		try {
-			conn = DriverManager.getConnection(URL, USER, PASSWORD);
-
 			String sql = "UPDATE article";
 			sql += " Set updateDATE = NOW()";
 			sql += ", title = '" + title + "'";
 			sql += ", `body` = '" + body + "'";
-			sql += "where id = '" + articleNumber + "';";
+			sql += "where id = " + articleNumber + ";";
 
 			pstmt = conn.prepareStatement(sql);
 			pstmt.executeUpdate();
 
 		} catch (SQLException e) {
 			e.printStackTrace();
-		} finally {
-			if (pstmt != null) {
-				try {
-					pstmt.close();
-				} catch (SQLException e) {
-					e.printStackTrace();
-				}
-			}
-
-			if (conn != null) {
-				try {
-					conn.close();
-				} catch (SQLException e) {
-					e.printStackTrace();
-				}
-			}
 		}
 	}
 
-	public static boolean articleCheck(String articleNumber) {
-		Connection conn = null;
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-
+	public boolean articleCheck(String articleNumber) {
 		try {
-			conn = DriverManager.getConnection(URL, USER, PASSWORD);
-
 			String sql = "SELECT * FROM article ";
 			sql += "where id = " + articleNumber + ";";
 
@@ -175,31 +106,52 @@ public class JDBC {
 				Article article = new Article(id, regDate, updateDate, title, body);
 				articles.add(article);
 			}
-			
+
 			if (articles.size() != 0)
 				return true;
 
 		} catch (SQLException e) {
 			e.printStackTrace();
-		} finally {
-			if (pstmt != null) {
-				try {
-					pstmt.close();
-				} catch (SQLException e) {
-					e.printStackTrace();
-				}
-			}
-
-			if (conn != null) {
-				try {
-					conn.close();
-				} catch (SQLException e) {
-					e.printStackTrace();
-				}
-			}
 		}
 
 		return false;
 	}
 
+	public void jdbcClose() {
+		if (pstmt != null) {
+			try {
+				pstmt.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+
+		if (conn != null) {
+			try {
+				conn.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+
+		if (rs != null) {
+			try {
+				rs.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+	public String getURL() {
+		return URL;
+	}
+
+	public String getUSER() {
+		return USER;
+	}
+
+	public String getPASSWORD() {
+		return PASSWORD;
+	}
 }
