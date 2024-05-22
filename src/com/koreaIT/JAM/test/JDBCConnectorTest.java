@@ -3,7 +3,10 @@ package com.koreaIT.JAM.test;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+
+import com.koreaIT.JAM.dto.Article;
 
 public class JDBCConnectorTest {
     private static final String URL = "jdbc:mysql://192.168.56.106:3306/JAM?useUnicode=true&characterEncoding=utf8&autoReconnect=true&serverTimezone=Asia/Seoul&useOldAliasMetadataBehavior=true&zeroDateTimeNehavior=convertToNull";
@@ -13,18 +16,29 @@ public class JDBCConnectorTest {
     public static void main(String[] args) {
         Connection conn = null;
         PreparedStatement pstmt = null;
+        ResultSet rs = null;
         
         try {
             conn = DriverManager.getConnection(URL, USER, PASSWORD);
             
-            String sql = "INSERT INTO article";
-            sql += " Set regDATE = NOW()";
-            sql += ", updateDATE = NOW()";
-            sql += ", title = '제목1'";
-            sql += ", `body` = '내용1';";
+            String sql = "SELECT * FROM article";
+            sql += " ORDER BY id DESC";
             
             pstmt = conn.prepareStatement(sql);
-            pstmt.executeUpdate();
+            rs = pstmt.executeQuery();
+            
+            while (rs.next()) {
+            	int id = rs.getInt("id");
+            	String regDate = rs.getString("regDate");
+            	String updateDate = rs.getString("updateDate");
+            	String title = rs.getString("title");
+            	String body = rs.getString("body");
+            	
+            	Article article = new Article(id, regDate, updateDate, title, body);
+//            	articles.add(article);
+            }
+            
+            
             
         } catch (SQLException e) {
             e.printStackTrace();
@@ -44,6 +58,15 @@ public class JDBCConnectorTest {
                     e.printStackTrace();
                 }
             }
+            
+            if (rs != null) {
+                try {
+                    rs.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+
         }
     }
 }

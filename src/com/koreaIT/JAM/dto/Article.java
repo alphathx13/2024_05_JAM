@@ -6,8 +6,8 @@ import com.koreaIT.JAM.util.Util;
 
 public class Article {
 	int articleId;
-	LocalDateTime writeDate;
-	LocalDateTime updateDate;
+	String regDate;
+	String updateDate;
 	String title;
 	String body;
 
@@ -35,10 +35,11 @@ public class Article {
 		this.body = body;
 	}
 
-	public Article(int lastArticleId, String title, String body) {
-		this.articleId = lastArticleId;
+	public Article(int id, String regDate, String updateDate, String title, String body) {
+		this.articleId = id;
 		this.title = title;
 		this.body = body;
-		this.writeDate = Util.now();
+		this.regDate = regDate;
+		this.updateDate = updateDate;
 	}
 }
