@@ -12,8 +12,8 @@ CREATE TABLE article (
 INSERT INTO article
     SET regDATE = NOW()
         , updateDATE = NOW()
-        , title = CONCAT('제목_', RAND())
-        , `body` = CONCAT('내용_', RAND());
+        , title = CONCAT('글제목_', SUBSTRING(RAND(), -3))
+        , `body` = CONCAT('글내용_', SUBSTRING(RAND(), -5))
 
 ##################################################
 
@@ -21,17 +21,19 @@ DROP TABLE IF EXISTS `member`;
 
 CREATE TABLE `member` (
     memberNumber INT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT
-    , memberId VARCHAR(30) NOT NULL
+    , memberId VARCHAR(30) NOT NULL UNIQUE
     , memberPassword VARCHAR(30) NOT NULL
     , `name` VARCHAR(20) NOT NULL
     , regDate DATETIME NOT NULL
+    , updateDate DATETIME NOT NULL
 );
 
 INSERT INTO `member`
-    SET memberId = CONCAT('Id_', SUBSTRING(RAND(), -5))
-        , memberPassword = '12345'
+    SET memberId = CONCAT('id_', SUBSTRING(RAND(), -5))
+        , memberPassword = CONCAT('pass_', SUBSTRING(RAND(), -5))
         , `name` = CONCAT('김', SUBSTRING(RAND(), -5))
         , regDate = NOW()
+        , updateDate = NOW();
 
 ##################################################
         

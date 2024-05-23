@@ -41,6 +41,118 @@ public class App {
 				if (cmd.equals("exit")) {
 					break;
 
+				} else if (cmd.equals("member join")) {
+					String memberId;
+					String memberPassword;
+					String name;
+
+					SecSql sql = new SecSql();
+
+					while (true) {
+						System.out.print("사용할 아이디) ");
+						memberId = sc.nextLine().trim();
+
+						if (memberId.length() == 0) {
+							System.out.println("아이디는 필수적으로 입력해야합니다.");
+							continue;
+						}
+
+						if (memberId.contains(" ")) {
+							System.out.println("중간에 공백이 들어갈 수 없습니다.");
+							continue;
+						}
+
+						sql = new SecSql();
+						sql.append("SELECT count(*) > 0");
+						sql.append("FROM `member`");
+						sql.append("WHERE memberId = ?", memberId);
+
+						if (DBUtil.selectRowBooleanValue(conn, sql) == true) {
+							System.out.println("해당 아이디는 이미 사용중입니다.");
+							continue;
+						}
+
+						System.out.printf("[ %s ] 아이디는 사용 가능합니다.\n", memberId);
+						
+						break;
+					}
+
+					while (true) {
+						System.out.print("사용할 비밀번호) ");
+						memberPassword = sc.nextLine().trim();
+
+						if (memberPassword.length() == 0) {
+							System.out.println("비밀번호는 필수적으로 입력해야합니다.");
+							continue;
+						}
+						
+						if (memberPassword.contains(" ")) {
+							System.out.println("중간에 공백이 들어갈 수 없습니다.");
+							continue;
+						}
+
+						System.out.print("비밀번호를 다시입력) ");
+						String passCheck = sc.nextLine().trim();
+
+						if (!memberPassword.equals(passCheck)) {
+							System.out.println("이전에 입력한 암호와 다릅니다.");
+							continue;
+						}
+
+						break;
+					}
+
+					while (true) {
+						System.out.print("사용자 이름) ");
+						name = sc.nextLine().trim();
+						
+						if (name.length() == 0) {
+							System.out.println("이름은 필수적으로 입력해야합니다.");
+							continue;
+						}
+
+						if (name.contains(" ")) {
+							System.out.println("중간에 공백이 들어갈 수 없습니다.");
+							continue;
+						}
+
+						break;
+					}
+
+					sql = new SecSql();
+					sql.append("INSERT INTO `member`");
+					sql.append("SET memberId = ?", memberId);
+					sql.append(", memberPassword = ?", memberPassword);
+					sql.append(", name = ?", name);
+					sql.append(", regDate = NOW()");
+					sql.append(", updateDate = NOW()");
+
+					DBUtil.insert(conn, sql);
+					System.out.printf(memberId + "님의 회원가입을 축하드립니다.\n");
+
+				} else if (cmd.equals("member list")) {
+
+					SecSql sql = new SecSql();
+					sql.append("SELECT * FROM `member`");
+
+					List<Map<String, Object>> memberList = DBUtil.selectRows(conn, sql);
+
+					if (memberList.size() == 0) {
+						System.out.println("회원이 존재하지 않습니다.");
+						continue;
+					}
+
+					System.out.println("회원번호 \t 회원 아이디 \t 회원 이름");
+
+					List<Member> foundMember = new ArrayList<>();
+
+					for (Map<String, Object> member : memberList)
+						foundMember.add(new Member(member));
+
+					for (Member member : foundMember)
+						System.out.printf("%d \t\t %s \t\t %s\n", member.getMemberNumber(), member.getMemberId(),
+								member.getName());
+
 				} else if (cmd.equals("article write")) {
 					System.out.print("제목) ");
 					String title = sc.nextLine();
@@ -93,20 +205,20 @@ public class App {
 					sql.append("WHERE id = ?", search);
 
 					Map<String, Object> article = DBUtil.selectRow(conn, sql);
-					
-					if(article.size() == 0) {
+
+					if (article.size() == 0) {
 						System.out.println("해당 글은 존재하지 않습니다.");
 						continue;
 					}
 
 					Article foundArticle = new Article(article);
-					
+
 					System.out.printf("번호 : %d\n", foundArticle.getArticleId());
 					System.out.printf("작성일 : %s\n", foundArticle.getRegDate());
 					System.out.printf("수정일 : %s\n", foundArticle.getUpdateDate());
 					System.out.printf("제목 : %s\n", foundArticle.getTitle());
 					System.out.printf("내용 : %s\n", foundArticle.getBody());
-					
+
 				} else if (cmd.startsWith("article modify ")) {
 					String articleNumber = cmd.substring(15);
 
@@ -152,65 +264,16 @@ public class App {
 					DBUtil.delete(conn, sql);
 					System.out.println(articleNumber + "번 글을 삭제하였습니다.");
 
-				} else if (cmd.equals("member join")) {
-
-					System.out.print("사용할 아이디) ");
-					String memberId = sc.nextLine();
-					System.out.print("사용할 비밀번호) ");
-					String memberPassword = sc.nextLine();
-					System.out.print("사용자 이름) ");
-					String name = sc.nextLine();
-
-					SecSql sql = new SecSql();
-					sql.append("SELECT count(*) > 0 FROM `member`");
-					sql.append("WHERE memberId = ?", memberId);
-
-					if (DBUtil.selectRowBooleanValue(conn, sql) == true) {
-						System.out.println("해당 아이디는 이미 사용중입니다.");
-						continue;
-					}
-
-					sql = new SecSql();
-					sql.append("INSERT INTO `member`");
-					sql.append("SET memberId = ?", memberId);
-					sql.append(", memberPassword = ?", memberPassword);
-					sql.append(", name = ?", name);
-					sql.append(", regDate = NOW()");
-
-					DBUtil.insert(conn, sql);
-					System.out.println("회원가입 되셨습니다.");
-
-				} else if (cmd.equals("member list")) {
-
-					SecSql sql = new SecSql();
-					sql.append("SELECT * FROM `member`");
-
-					List<Map<String, Object>> memberList = DBUtil.selectRows(conn, sql);
-
-					if (memberList.size() == 0) {
-						System.out.println("회원이 존재하지 않습니다.");
-						continue;
-					}
-
-					System.out.println("회원번호 \t 회원 아이디 \t 회원 이름");
-
-					List<Member> foundMember = new ArrayList<>();
-
-					for (Map<String, Object> member : memberList)
-						foundMember.add(new Member(member));
-
-					for (Member member : foundMember)
-						System.out.printf("%d \t\t %s \t\t %s\n", member.getMemberNumber(), member.getMemberId(),
-								member.getName());
-
 				} else {
-					
+
 					System.out.println("명령어를 다시 입력해주세요.");
-					
+
 				}
 			}
 
-		} catch (SQLException e) {
+		} catch (
+
+		SQLException e) {
 			e.printStackTrace();
 		} finally {
 
