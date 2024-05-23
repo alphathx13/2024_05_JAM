@@ -1,10 +1,4 @@
-CREATE TABLE IF EXISTS JAM;
-CREATE TABLE JAM;
-USE JAM;
-
-
-
-USE JAM;
+DROP TABLE IF EXISTS article;
 
 CREATE TABLE article (
     id INT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT
@@ -14,11 +8,34 @@ CREATE TABLE article (
     , `body` TEXT NOT NULL
 );
 
+
 INSERT INTO article
     SET regDATE = NOW()
         , updateDATE = NOW()
         , title = CONCAT('제목_', RAND())
-        , `body` = CONCAT('내용1_', RAND());
+        , `body` = CONCAT('내용_', RAND());
+
+##################################################
+
+DROP TABLE IF EXISTS `member`;
+
+CREATE TABLE `member` (
+    memberNumber INT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT
+    , memberId VARCHAR(30) NOT NULL
+    , memberPassword VARCHAR(30) NOT NULL
+    , `name` VARCHAR(20) NOT NULL
+    , regDate DATETIME NOT NULL
+);
+
+INSERT INTO `member`
+    SET memberId = CONCAT('Id_', SUBSTRING(RAND(), -5))
+        , memberPassword = '12345'
+        , `name` = CONCAT('김', SUBSTRING(RAND(), -5))
+        , regDate = NOW()
+
+##################################################
         
         
 SELECT * FROM article;
+
+SELECT * FROM `member`;

@@ -68,7 +68,7 @@ public class App {
 						System.out.println("게시글이 존재하지 않습니다.");
 						continue;
 					}
-					
+
 					System.out.println("글번호 \t 글 제목");
 
 //					List화 안하고 바로 출력
@@ -89,28 +89,24 @@ public class App {
 					String search = cmd.substring(15);
 
 					SecSql sql = new SecSql();
-					sql.append("SELECT count(*) > 0 FROM article");
+					sql.append("SELECT * FROM article");
 					sql.append("WHERE id = ?", search);
 
-					if (DBUtil.selectRowBooleanValue(conn, sql) == false) {
+					Map<String, Object> article = DBUtil.selectRow(conn, sql);
+					
+					if(article.size() == 0) {
 						System.out.println("해당 글은 존재하지 않습니다.");
 						continue;
 					}
+
+					Article foundArticle = new Article(article);
 					
-					SecSql sql2 = new SecSql();
-					sql2.append("SELECT * FROM article");
-					sql2.append("WHERE id = ?", search);
-
-					List<Map<String, Object>> articleList = DBUtil.selectRows(conn, sql2);
-
-					List<Article> foundArticle = new ArrayList<>();
-
-					for (Map<String, Object> article : articleList)
-						foundArticle.add(new Article(article));
-
-					for (Article article : foundArticle)
-						System.out.printf("%s \t %s\n", article.getArticleId(), article.getTitle());
-
+					System.out.printf("번호 : %d\n", foundArticle.getArticleId());
+					System.out.printf("작성일 : %s\n", foundArticle.getRegDate());
+					System.out.printf("수정일 : %s\n", foundArticle.getUpdateDate());
+					System.out.printf("제목 : %s\n", foundArticle.getTitle());
+					System.out.printf("내용 : %s\n", foundArticle.getBody());
+					
 				} else if (cmd.startsWith("article modify ")) {
 					String articleNumber = cmd.substring(15);
 
@@ -128,15 +124,14 @@ public class App {
 					System.out.print("내용) ");
 					String body = sc.nextLine();
 
-					SecSql sql2 = new SecSql();
-					sql2.append("UPDATE article");
-					sql2.append("Set updateDATE = NOW()");
-					sql2.append(", title = ?", title);
-					sql2.append(", `body` = ?", body);
-					sql2.append("where id = ?", articleNumber);
+					sql = new SecSql();
+					sql.append("UPDATE article");
+					sql.append("Set updateDATE = NOW()");
+					sql.append(", title = ?", title);
+					sql.append(", `body` = ?", body);
+					sql.append("where id = ?", articleNumber);
 
-					DBUtil.update(conn, sql2);
-					System.out.println(articleNumber + "번 글을 수정하였습니다.");
+					System.out.println(DBUtil.update(conn, sql) + "번 글을 수정하였습니다.");
 
 				} else if (cmd.startsWith("article delete ")) {
 					String articleNumber = cmd.substring(15);
@@ -150,11 +145,11 @@ public class App {
 						continue;
 					}
 
-					SecSql sql2 = new SecSql();
-					sql2.append("DELETE FROM article");
-					sql2.append("where id = ?", articleNumber);
+					sql = new SecSql();
+					sql.append("DELETE FROM article");
+					sql.append("where id = ?", articleNumber);
 
-					DBUtil.delete(conn, sql2);
+					DBUtil.delete(conn, sql);
 					System.out.println(articleNumber + "번 글을 삭제하였습니다.");
 
 				} else if (cmd.equals("member join")) {
@@ -173,16 +168,16 @@ public class App {
 					if (DBUtil.selectRowBooleanValue(conn, sql) == true) {
 						System.out.println("해당 아이디는 이미 사용중입니다.");
 						continue;
-					}		
-					
-					SecSql sql2 = new SecSql();
-					sql2.append("INSERT INTO `member`");
-					sql2.append("SET memberId = ?", memberId);
-					sql2.append(", memberPassword = ?", memberPassword);
-					sql2.append(", name = ?", name);
-					sql2.append(", regDate = NOW()");
+					}
 
-					DBUtil.insert(conn, sql2);
+					sql = new SecSql();
+					sql.append("INSERT INTO `member`");
+					sql.append("SET memberId = ?", memberId);
+					sql.append(", memberPassword = ?", memberPassword);
+					sql.append(", name = ?", name);
+					sql.append(", regDate = NOW()");
+
+					DBUtil.insert(conn, sql);
 					System.out.println("회원가입 되셨습니다.");
 
 				} else if (cmd.equals("member list")) {
@@ -196,7 +191,7 @@ public class App {
 						System.out.println("회원이 존재하지 않습니다.");
 						continue;
 					}
-					
+
 					System.out.println("회원번호 \t 회원 아이디 \t 회원 이름");
 
 					List<Member> foundMember = new ArrayList<>();
@@ -205,8 +200,13 @@ public class App {
 						foundMember.add(new Member(member));
 
 					for (Member member : foundMember)
-						System.out.printf("%d \t\t %s \t\t %s\n", member.getMemberNumber() , member.getMemberId(), member.getName());
+						System.out.printf("%d \t\t %s \t\t %s\n", member.getMemberNumber(), member.getMemberId(),
+								member.getName());
 
+				} else {
+					
+					System.out.println("명령어를 다시 입력해주세요.");
+					
 				}
 			}
 
