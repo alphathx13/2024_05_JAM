@@ -1,22 +1,32 @@
 package com.koreaIT.JAM.dto;
 
 import java.time.LocalDateTime;
-
-import com.koreaIT.JAM.util.Util;
+import java.util.Map;
 
 public class Member {
-	static int lastMemberNumber;
 	int memberNumber;
 	String memberId;
-	String memberPass;
-	String memberName;
+	String memberPassword;
+	String name;
 	LocalDateTime regDate;
 	
-	public Member(int lastMemberNumber, String memberId, String memberPass, String memberName) {
-		this.memberNumber = lastMemberNumber;
-		this.memberId = memberId;
-		this.memberPass = memberPass;
-		this.memberName = memberName;
-		this.regDate = Util.now();
+	public int getMemberNumber() {
+		return memberNumber;
+	}
+
+	public String getMemberId() {
+		return memberId;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public Member(Map<String, Object> foundMember) {
+		this.memberNumber = (int) foundMember.get("memberNumber");
+		this.memberId = (String) foundMember.get("memberId");
+		this.memberPassword = (String) foundMember.get("memberPassword");
+		this.name = (String) foundMember.get("name");
+		this.regDate = (LocalDateTime) foundMember.get("regDate");
 	}
 }
