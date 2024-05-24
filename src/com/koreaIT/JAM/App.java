@@ -10,6 +10,8 @@ import java.util.Scanner;
 
 import com.koreaIT.JAM.dto.Article;
 import com.koreaIT.JAM.dto.Member;
+import com.koreaIT.JAM.service.articleService;
+import com.koreaIT.JAM.service.memberService;
 import com.koreaIT.JAM.util.DBUtil;
 import com.koreaIT.JAM.util.SecSql;
 
@@ -17,12 +19,17 @@ public class App {
 	private final String URL;
 	private final String USER;
 	private final String PASSWORD;
+	private boolean loginCheck;
+	private Member loginMember;
 	public Connection conn;
 
 	{
 		URL = "jdbc:mysql://192.168.56.106:3306/JAM?useUnicode=true&characterEncoding=utf8&autoReconnect=true&serverTimezone=Asia/Seoul&useOldAliasMetadataBehavior=true&zeroDateTimeNehavior=convertToNull";
 		USER = "root";
 		PASSWORD = "123456a";
+		loginCheck = false;
+		loginMember = null;
+		conn = null;
 	}
 
 	public void run() {
@@ -35,7 +42,11 @@ public class App {
 			conn = DriverManager.getConnection(URL, USER, PASSWORD);
 
 			while (true) {
-				System.out.print("명령어) ");
+				if (loginCheck == true)
+					System.out.print(loginMember.getMemberId() + " - 명령어) ");
+				else
+					System.out.print("명령어) ");
+
 				cmd = sc.nextLine().trim();
 
 				if (cmd.equals("exit")) {
@@ -45,8 +56,6 @@ public class App {
 					String memberId;
 					String memberPassword;
 					String name;
-
-					SecSql sql = new SecSql();
 
 					while (true) {
 						System.out.print("사용할 아이디) ");
@@ -61,19 +70,15 @@ public class App {
 							System.out.println("중간에 공백이 들어갈 수 없습니다.");
 							continue;
 						}
+						
 
-						sql = new SecSql();
-						sql.append("SELECT count(*) > 0");
-						sql.append("FROM `member`");
-						sql.append("WHERE memberId = ?", memberId);
-
-						if (DBUtil.selectRowBooleanValue(conn, sql) == true) {
+						if (memberService.memberIdDupCheck(memberId, conn) == true) {
 							System.out.println("해당 아이디는 이미 사용중입니다.");
 							continue;
 						}
 
 						System.out.printf("[ %s ] 아이디는 사용 가능합니다.\n", memberId);
-						
+
 						break;
 					}
 
@@ -85,7 +90,7 @@ public class App {
 							System.out.println("비밀번호는 필수적으로 입력해야합니다.");
 							continue;
 						}
-						
+
 						if (memberPassword.contains(" ")) {
 							System.out.println("중간에 공백이 들어갈 수 없습니다.");
 							continue;
@@ -105,7 +110,7 @@ public class App {
 					while (true) {
 						System.out.print("사용자 이름) ");
 						name = sc.nextLine().trim();
-						
+
 						if (name.length() == 0) {
 							System.out.println("이름은 필수적으로 입력해야합니다.");
 							continue;
@@ -119,16 +124,62 @@ public class App {
 						break;
 					}
 
-					sql = new SecSql();
-					sql.append("INSERT INTO `member`");
-					sql.append("SET memberId = ?", memberId);
-					sql.append(", memberPassword = ?", memberPassword);
-					sql.append(", name = ?", name);
-					sql.append(", regDate = NOW()");
-					sql.append(", updateDate = NOW()");
-
-					DBUtil.insert(conn, sql);
+					memberService.memberJoin(memberId, memberPassword, name, conn);
+					
 					System.out.printf(memberId + "님의 회원가입을 축하드립니다.\n");
+
+				} else if (cmd.equals("member login")) {
+					if (loginCheck == true) {
+						System.out.println("먼저 로그아웃 해야합니다.");
+						continue;
+					}
+
+					String loginId = null;
+					String loginPassword = null;
+
+					while (true) {
+						System.out.print("아이디) ");
+						loginId = sc.nextLine().trim();
+
+						if (loginId.length() == 0 || loginId.contains(" ")) {
+							System.out.println("다시 입력해주세요.");
+							continue;
+						}
+
+						break;
+					}
+
+					while (true) {
+						System.out.print("비밀번호) ");
+						loginPassword = sc.nextLine().trim();
+
+						if (loginPassword.length() == 0 || loginPassword.contains(" ")) {
+							System.out.println("다시 입력해주세요.");
+							continue;
+						}
+
+						break;
+					}
+					
+					if (memberService.memberLoginCheck(loginId, loginPassword, conn) == false) {
+						System.out.println("계정정보가 일치하지 않습니다.");
+						continue;
+					}
+
+					loginMember = new Member(memberService.memberLogin(loginId, loginPassword, conn));
+					loginCheck = true;
+
+					System.out.println(loginMember.getMemberId() + "님의 로그인을 환영합니다.");
+
+				} else if (cmd.equals("member logout")) {
+					if (loginCheck == false) {
+						System.out.println("먼저 로그인 해야합니다.");
+						continue;
+					}
+
+					loginCheck = false;
+					loginMember = null;
+					System.out.println("정상적으로 로그아웃 되었습니다.");
 
 				} else if (cmd.equals("member list")) {
 
@@ -159,22 +210,11 @@ public class App {
 					System.out.print("내용) ");
 					String body = sc.nextLine();
 
-					SecSql sql = new SecSql();
-					sql.append("INSERT INTO article");
-					sql.append("SET regDate = NOW()");
-					sql.append(", updateDate = NOW()");
-					sql.append(", title = ?", title);
-					sql.append(", `body` = ?", body);
-
-					System.out.printf("%d번 게시물이 작성되었습니다\n", DBUtil.insert(conn, sql));
+					System.out.printf("%d번 게시물이 작성되었습니다\n", articleService.articleWrite(title, body, conn));
 
 				} else if (cmd.equals("article list")) {
 
-					SecSql sql = new SecSql();
-					sql.append("SELECT * FROM article");
-					sql.append("ORDER BY id DESC");
-
-					List<Map<String, Object>> articleList = DBUtil.selectRows(conn, sql);
+					List<Map<String, Object>> articleList = articleService.articleList(conn);
 
 					if (articleList.size() == 0) {
 						System.out.println("게시글이 존재하지 않습니다.");
@@ -182,12 +222,6 @@ public class App {
 					}
 
 					System.out.println("글번호 \t 글 제목");
-
-//					List화 안하고 바로 출력
-//					for (int i = 0; i < foundArticle.size(); i++) 
-//						System.out.printf("%s \t %s\n", foundArticle.get(i).get("id"), foundArticle.get(i).get("title"));					                                   
-//					for (Map<String, Object> article : foundArticle) 
-//						System.out.printf("%s \t %s\n", article.get("id"), article.get("title"));
 
 					List<Article> foundArticle = new ArrayList<>();
 
@@ -200,11 +234,7 @@ public class App {
 				} else if (cmd.startsWith("article detail ")) {
 					String search = cmd.substring(15);
 
-					SecSql sql = new SecSql();
-					sql.append("SELECT * FROM article");
-					sql.append("WHERE id = ?", search);
-
-					Map<String, Object> article = DBUtil.selectRow(conn, sql);
+					Map<String, Object> article = articleService.detail(search, conn);
 
 					if (article.size() == 0) {
 						System.out.println("해당 글은 존재하지 않습니다.");
@@ -222,11 +252,7 @@ public class App {
 				} else if (cmd.startsWith("article modify ")) {
 					String articleNumber = cmd.substring(15);
 
-					SecSql sql = new SecSql();
-					sql.append("SELECT count(*) > 0 FROM article");
-					sql.append("WHERE id = ?", articleNumber);
-
-					if (DBUtil.selectRowBooleanValue(conn, sql) == false) {
+					if (articleService.articleCheck(articleNumber, conn) == false) {
 						System.out.println("해당 글은 존재하지 않습니다.");
 						continue;
 					}
@@ -236,38 +262,24 @@ public class App {
 					System.out.print("내용) ");
 					String body = sc.nextLine();
 
-					sql = new SecSql();
-					sql.append("UPDATE article");
-					sql.append("Set updateDATE = NOW()");
-					sql.append(", title = ?", title);
-					sql.append(", `body` = ?", body);
-					sql.append("where id = ?", articleNumber);
+					articleService.articleModify(articleNumber, title, body, conn);
 
-					System.out.println(DBUtil.update(conn, sql) + "번 글을 수정하였습니다.");
+					System.out.println(articleNumber + "번 글을 수정하였습니다.");
 
 				} else if (cmd.startsWith("article delete ")) {
 					String articleNumber = cmd.substring(15);
 
-					SecSql sql = new SecSql();
-					sql.append("SELECT count(*) > 0 FROM article");
-					sql.append("WHERE id = ?", articleNumber);
-
-					if (DBUtil.selectRowBooleanValue(conn, sql) == false) {
+					if (articleService.articleCheck(articleNumber, conn) == false) {
 						System.out.println("해당 글은 존재하지 않습니다.");
 						continue;
 					}
 
-					sql = new SecSql();
-					sql.append("DELETE FROM article");
-					sql.append("where id = ?", articleNumber);
+					articleService.articleDelete(articleNumber, conn);
 
-					DBUtil.delete(conn, sql);
 					System.out.println(articleNumber + "번 글을 삭제하였습니다.");
 
 				} else {
-
 					System.out.println("명령어를 다시 입력해주세요.");
-
 				}
 			}
 
