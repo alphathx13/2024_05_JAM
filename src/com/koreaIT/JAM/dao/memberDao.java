@@ -53,4 +53,12 @@ public class MemberDao {
 		return DBUtil.selectRowBooleanValue(conn, sql);
 	}
 
+	public Map<String, Object> LoginMemberId(int loginMemberNumber) {
+		SecSql sql = new SecSql();
+		sql.append("SELECT * FROM `member`");
+		sql.append("WHERE memberNumber = ?", loginMemberNumber);
+
+		return DBUtil.selectRow(conn, sql);
+	}
+
 }

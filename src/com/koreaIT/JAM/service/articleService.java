@@ -16,8 +16,8 @@ public class ArticleService {
 		this.articleDao = new ArticleDao(conn);
 	}
 
-	public int articleWrite(String title, String body) {
-		return articleDao.articleWrite(title, body);
+	public int articleWrite(String title, String body, int MemberId) {
+		return articleDao.articleWrite(title, body, MemberId);
 	}
 
 	public List<Article> articleList() {
@@ -28,7 +28,7 @@ public class ArticleService {
 
 		for (Map<String, Object> article : articleList)
 			foundArticle.add(new Article(article));
-		
+
 		return foundArticle;
 	}
 
@@ -48,9 +48,9 @@ public class ArticleService {
 	public void articleDelete(String articleNumber) {
 		articleDao.articleDelete(articleNumber);
 	}
-	
-	public boolean articleCheck(String articleNumber) {
-		return articleDao.articleCheck(articleNumber);
+
+	public boolean[] articleCheck(String articleNumber, int loginMemberId) {
+		return articleDao.articleCheck(articleNumber, loginMemberId);
 	}
 	
 }

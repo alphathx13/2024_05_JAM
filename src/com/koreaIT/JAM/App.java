@@ -8,6 +8,7 @@ import java.util.Scanner;
 import com.koreaIT.JAM.controller.ArticleController;
 import com.koreaIT.JAM.controller.Controller;
 import com.koreaIT.JAM.controller.MemberController;
+import com.koreaIT.JAM.session.Session;
 
 public class App {
 	private final String URL;
@@ -36,8 +37,8 @@ public class App {
 			MemberController memberController = new MemberController(conn, sc);
 
 			while (true) {
-				if (Controller.isLoginCheck() == true)
-					System.out.print(Controller.getLoginMember().getMemberId() + " - 명령어) ");
+				if (Session.isLogin() == true)
+					System.out.print(memberController.loginMemberId() + " - 명령어) ");
 				else
 					System.out.print("명령어) ");
 
@@ -47,22 +48,39 @@ public class App {
 				if (cmd.equals("exit"))
 					break;
 
-				switch (cmds[0]) {
+				switch (cmds[0] + cmds[1]) {
 
-				case "article":
+				case "articlewrite":
+				case "articleModify":
+				case "articleDelete":
+				case "memberlogout":
+					if (Session.isLogin() == false) {
+						System.out.println("로그인 상태에서 사용할 수 있는 기능입니다.");
+						continue;
+					}
+					break;
+
+				case "memberjoin":
+				case "memberlogin":
+					if (Session.isLogin() == true) {
+						System.out.println("로그아웃 상태에서 사용할 수 있는 기능입니다.");
+						continue;
+					}
+					break;
+
+				}
+
+				if (cmds[0].equals("article"))
 					controller = articleController;
-					break;
-
-				case "member":
+				else if (cmds[0].equals("member"))
 					controller = memberController;
-					break;
-
-				default:
+				else {
 					System.out.println("명령어를 다시 입력해주세요.");
+					continue;
 				}
 
 				controller.cmdCheck(cmd);
-
+				
 			}
 
 		} catch (SQLException e) {

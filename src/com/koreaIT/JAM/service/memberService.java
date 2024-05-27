@@ -1,7 +1,6 @@
 package com.koreaIT.JAM.service;
 
 import java.sql.Connection;
-import java.util.List;
 import java.util.Map;
 
 import com.koreaIT.JAM.dao.MemberDao;
@@ -34,6 +33,12 @@ public class MemberService {
 
 	public boolean memberLoginCheck(String loginId, String loginPassword) {
 		return memberDao.memberLoginCheck(loginId, loginPassword);
+	}
+
+	public String loginMemberId(int loginMemberNumber) {
+		Map<String, Object> loginMember = memberDao.LoginMemberId(loginMemberNumber);
+		
+		return (String) loginMember.get("memberId");
 	}
 
 }
