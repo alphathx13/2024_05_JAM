@@ -7,9 +7,15 @@ import java.util.Map;
 import com.koreaIT.JAM.util.DBUtil;
 import com.koreaIT.JAM.util.SecSql;
 
-public class articleDao {
+public class ArticleDao {
+	
+	private Connection conn;
+	
+	public ArticleDao(Connection conn) {
+		this.conn = conn;
+	}
 
-	public static int articleWrite(String title, String body, Connection conn) {
+	public int articleWrite(String title, String body) {
 		SecSql sql = new SecSql();
 		sql.append("INSERT INTO article");
 		sql.append("SET regDate = NOW()");
@@ -21,7 +27,7 @@ public class articleDao {
 		
 	}
 
-	public static List<Map<String, Object>> articleList(Connection conn) {
+	public List<Map<String, Object>> articleList() {
 		SecSql sql = new SecSql();
 		sql.append("SELECT * FROM article");
 		sql.append("ORDER BY id DESC");
@@ -29,7 +35,7 @@ public class articleDao {
 		return DBUtil.selectRows(conn, sql);
 	}
 
-	public static Map<String, Object> articleDetail(String search, Connection conn) {
+	public Map<String, Object> articleDetail(String search) {
 		SecSql sql = new SecSql();
 		sql.append("SELECT * FROM article");
 		sql.append("WHERE id = ?", search);
@@ -37,15 +43,7 @@ public class articleDao {
 		return DBUtil.selectRow(conn, sql);	
 	}
 
-	public static boolean articleCheck(String articleNumber, Connection conn) {
-		SecSql sql = new SecSql();
-		sql.append("SELECT count(*) > 0 FROM article");
-		sql.append("WHERE id = ?", articleNumber);
-
-		return DBUtil.selectRowBooleanValue(conn, sql);	
-	}
-
-	public static void articleModify(String articleNumber, String title, String body, Connection conn) {
+	public void articleModify(String articleNumber, String title, String body) {
 		SecSql sql = new SecSql();
 		sql.append("UPDATE article");
 		sql.append("Set updateDATE = NOW()");
@@ -56,12 +54,20 @@ public class articleDao {
 		DBUtil.update(conn, sql);
 	}
 
-	public static void articleDelete(String articleNumber, Connection conn) {
+	public void articleDelete(String articleNumber) {
 		SecSql sql = new SecSql();
 		sql = new SecSql();
 		sql.append("DELETE FROM article");
 		sql.append("where id = ?", articleNumber);
 
 		DBUtil.delete(conn, sql);
+	}
+	
+	public boolean articleCheck(String articleNumber) {
+		SecSql sql = new SecSql();
+		sql.append("SELECT count(*) > 0 FROM article");
+		sql.append("WHERE id = ?", articleNumber);
+
+		return DBUtil.selectRowBooleanValue(conn, sql);	
 	}
 }

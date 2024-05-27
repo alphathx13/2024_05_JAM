@@ -1,34 +1,56 @@
 package com.koreaIT.JAM.service;
 
 import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import com.koreaIT.JAM.dao.articleDao;
+import com.koreaIT.JAM.dao.ArticleDao;
+import com.koreaIT.JAM.dto.Article;
 
-public class articleService {
-
-	public static int articleWrite(String title, String body, Connection conn) {
-		return articleDao.articleWrite(title, body, conn);
+public class ArticleService {
+	
+	private ArticleDao articleDao;
+	
+	public ArticleService(Connection conn) {
+		this.articleDao = new ArticleDao(conn);
 	}
 
-	public static List<Map<String, Object>> articleList(Connection conn) {
-		return articleDao.articleList(conn);
+	public int articleWrite(String title, String body) {
+		return articleDao.articleWrite(title, body);
 	}
 
-	public static Map<String, Object> detail(String search, Connection conn) {
-		return articleDao.articleDetail(search, conn);
+	public List<Article> articleList() {
+		
+		List<Map<String, Object>> articleList = articleDao.articleList();
+
+		List<Article> foundArticle = new ArrayList<>();
+
+		for (Map<String, Object> article : articleList)
+			foundArticle.add(new Article(article));
+		
+		return foundArticle;
 	}
 
-	public static void articleModify(String articleNumber, String title, String body, Connection conn) {
-		articleDao.articleModify(articleNumber, title, body, conn);
+	public Article articleDetail(String search) {
+		Map<String, Object> article = articleDao.articleDetail(search);
+		
+		if (article.size() == 0)
+			return null;
+		
+		return new Article(article);
 	}
 
-	public static void articleDelete(String articleNumber, Connection conn) {
-		articleDao.articleDelete(articleNumber, conn);
+	public void articleModify(String articleNumber, String title, String body) {
+		articleDao.articleModify(articleNumber, title, body);
+	}
+
+	public void articleDelete(String articleNumber) {
+		articleDao.articleDelete(articleNumber);
 	}
 	
-	public static boolean articleCheck(String articleNumber, Connection conn) {
-		return articleDao.articleCheck(articleNumber, conn);
+	public boolean articleCheck(String articleNumber) {
+		return articleDao.articleCheck(articleNumber);
 	}
+	
 }

@@ -6,10 +6,14 @@ import java.util.Map;
 import com.koreaIT.JAM.util.DBUtil;
 import com.koreaIT.JAM.util.SecSql;
 
-public class memberDao {
+public class MemberDao {
+	private Connection conn;
 
+	public MemberDao(Connection conn) {
+		this.conn = conn;
+	}
 
-	public static void memberJoin(String memberId, String memberPassword, String name, Connection conn) {
+	public void memberJoin(String memberId, String memberPassword, String name) {
 		SecSql sql = new SecSql();
 		sql.append("INSERT INTO `member`");
 		sql.append("SET memberId = ?", memberId);
@@ -21,16 +25,16 @@ public class memberDao {
 		DBUtil.insert(conn, sql);
 	}
 
-	public static Map<String, Object> memberLogin(String loginId, String loginPassword, Connection conn) {
+	public Map<String, Object> memberLogin(String loginId, String loginPassword) {
 		SecSql sql = new SecSql();
 		sql.append("SELECT * FROM `member`");
 		sql.append("WHERE memberId = ?", loginId);
 		sql.append("AND memberPassword = ?", loginPassword);
-		
+
 		return DBUtil.selectRow(conn, sql);
 	}
 
-	public static boolean memberIdDupCheck(String memberId, Connection conn) {
+	public boolean memberIdDupCheck(String memberId) {
 		SecSql sql = new SecSql();
 		sql = new SecSql();
 		sql.append("SELECT count(*) > 0");
@@ -39,8 +43,8 @@ public class memberDao {
 
 		return DBUtil.selectRowBooleanValue(conn, sql);
 	}
-	
-	public static boolean memberLoginCheck(String loginId, String loginPassword, Connection conn) {
+
+	public boolean memberLoginCheck(String loginId, String loginPassword) {
 		SecSql sql = new SecSql();
 		sql.append("SELECT count(*) > 0 FROM `member`");
 		sql.append("WHERE memberId = ?", loginId);

@@ -1,27 +1,39 @@
 package com.koreaIT.JAM.service;
 
 import java.sql.Connection;
+import java.util.List;
 import java.util.Map;
 
-import com.koreaIT.JAM.dao.memberDao;
+import com.koreaIT.JAM.dao.MemberDao;
+import com.koreaIT.JAM.dto.Member;
 
-public class memberService {
+public class MemberService {
+	MemberDao memberDao;
 
-	public static void memberJoin(String memberId, String memberPassword, String name, Connection conn) {
-		memberDao.memberJoin(memberId, memberPassword, name, conn);
+	public MemberService(Connection conn) {
+		this.memberDao = new MemberDao(conn);
+	}
+
+	public void memberJoin(String memberId, String memberPassword, String name) {
+		memberDao.memberJoin(memberId, memberPassword, name);
 	}
 	
-	public static Map<String, Object> memberLogin(String loginId, String loginPassword, Connection conn) {
-		return memberDao.memberLogin(loginId, loginPassword, conn);
+	public Member memberLogin(String loginId, String loginPassword) {
+		Map<String, Object> loginMember = memberDao.memberLogin(loginId, loginPassword);
+		
+		if (loginMember.size() != 0) {
+			return new Member(loginMember);
+		}
+		
+		return null;
 	}
 	
-	public static boolean memberIdDupCheck(String memberId, Connection conn) {
-		return memberDao.memberIdDupCheck(memberId, conn);
+	public boolean memberIdDupCheck(String memberId) {
+		return memberDao.memberIdDupCheck(memberId);
 	}
 
-	public static boolean memberLoginCheck(String loginId, String loginPassword, Connection conn) {
-		return memberDao.memberLoginCheck(loginId, loginPassword, conn);
+	public boolean memberLoginCheck(String loginId, String loginPassword) {
+		return memberDao.memberLoginCheck(loginId, loginPassword);
 	}
-
 
 }
