@@ -10,6 +10,8 @@ public class Article {
 	private String title;
 	private String body;
 	private String writer;
+	private int writerId;
+	private int viewCount;
 
 	public int getArticleId() {
 		return articleId;
@@ -34,6 +36,14 @@ public class Article {
 	public String getWriter() {
 		return writer;
 	}
+	
+	public int getWriterId() {
+		return writerId;
+	}
+
+	public int getViewCount() {
+		return viewCount;
+	}
 
 	public Article(Map<String, Object> articleMap) {
 		this.articleId = (int) articleMap.get("id");
@@ -41,6 +51,8 @@ public class Article {
 		this.updateDate = (LocalDateTime) articleMap.get("updateDate");
 		this.title = (String) articleMap.get("title");
 		this.body = (String) articleMap.get("body");
-		this.writer = (String) articleMap.get("memberId");
+		this.writer = (String) articleMap.get("writerName");
+		this.writerId = (int) articleMap.get("writer");
+		this.viewCount = (int) articleMap.get("viewCount");
 	}
 }

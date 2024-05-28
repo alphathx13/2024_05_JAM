@@ -29,18 +29,19 @@ public class ArticleDao {
 
 	public List<Map<String, Object>> articleList() {
 		SecSql sql = new SecSql();
-		sql.append("SELECT a.id, a.regDate, a.updateDate, title, `body`, b.memberId");
+		sql.append("SELECT a.*, b.memberId AS 'writerName'");
 		sql.append("FROM article a");
 		sql.append("INNER JOIN `member` b");
 		sql.append("ON a.writer = b.memberNumber");
 		sql.append("ORDER BY id DESC");
-		
+
 		return DBUtil.selectRows(conn, sql);
 	}
 
 	public Map<String, Object> articleDetail(String search) {
+
 		SecSql sql = new SecSql();
-		sql.append("SELECT a.id, a.regDate, a.updateDate, title, `body`, b.memberId");
+		sql.append("SELECT a.*, b.memberId AS `writerName`");
 		sql.append("FROM article a");
 		sql.append("INNER JOIN `member` b");
 		sql.append("ON a.writer = b.memberNumber");
@@ -69,25 +70,21 @@ public class ArticleDao {
 		DBUtil.delete(conn, sql);
 	}
 
-	public boolean[] articleCheck(String articleNumber, int loginMemberId) {
-		boolean[] check = new boolean[2];
-		
+	public Map<String, Object> articleCheck(String articleNumber) {
 		SecSql sql = new SecSql();
-		sql.append("SELECT count(*) > 0 FROM article");
+		sql.append("SELECT * FROM article");
 		sql.append("WHERE id = ?", articleNumber);
-		check[0] = DBUtil.selectRowBooleanValue(conn, sql);
 
-		sql = new SecSql();
-		sql.append("SELECT a.id, b.memberId");
-		sql.append("FROM article a");
-		sql.append("INNER JOIN `member` b");
-		sql.append("ON a.writer = b.memberNumber");
-		sql.append("WHERE a.id = ?", articleNumber);
-		sql.append("AND b.memberId = ?", loginMemberId);
-		
-		check[1] = DBUtil.selectRowBooleanValue(conn, sql);
-		
-		return check;
+		return DBUtil.selectRow(conn, sql);
+	}
+
+	public int increaseViewCount(String cmd) {
+		SecSql sql = new SecSql();
+		sql.append("UPDATE article");
+		sql.append("SET viewCount = viewCount + 1");
+		sql.append("WHERE id = ?", cmd);
+
+		return DBUtil.update(conn, sql);
 	}
 
 }

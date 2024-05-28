@@ -49,8 +49,18 @@ public class ArticleService {
 		articleDao.articleDelete(articleNumber);
 	}
 
-	public boolean[] articleCheck(String articleNumber, int loginMemberId) {
-		return articleDao.articleCheck(articleNumber, loginMemberId);
+	public Article articleCheck(String articleNumber) {
+		Map<String, Object> article = articleDao.articleCheck(articleNumber);
+		
+		if (article.isEmpty())
+			return null;
+		
+		return new Article(article);
+		
+	}
+
+	public int increaseViewCount(String cmd) {
+		return articleDao.increaseViewCount(cmd);
 	}
 	
 }
