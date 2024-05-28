@@ -27,12 +27,15 @@ public class ArticleDao {
 		return DBUtil.insert(conn, sql);
 	}
 
-	public List<Map<String, Object>> articleList() {
+	public List<Map<String, Object>> articleList(String search) {
 		SecSql sql = new SecSql();
 		sql.append("SELECT a.*, b.memberId AS 'writerName'");
 		sql.append("FROM article a");
 		sql.append("INNER JOIN `member` b");
 		sql.append("ON a.writer = b.memberNumber");
+		if (search.length() > 0) {
+			sql.append("WHERE a.title LIKE CONCAT('%', ?, '%')", search);
+		}
 		sql.append("ORDER BY id DESC");
 
 		return DBUtil.selectRows(conn, sql);
@@ -85,6 +88,18 @@ public class ArticleDao {
 		sql.append("WHERE id = ?", cmd);
 
 		return DBUtil.update(conn, sql);
+	}
+
+	public List<Map<String, Object>> articleSearch(String cmd) {
+		SecSql sql = new SecSql();
+		sql.append("SELECT a.*, b.memberId AS 'writerName'");
+		sql.append("FROM article a");
+		sql.append("INNER JOIN `member` b");
+		sql.append("ON a.writer = b.memberNumber");
+		sql.append("WHERE a.title LIKE CONCAT('%', ?, '%')", cmd);
+		sql.append("ORDER BY id DESC");
+
+		return DBUtil.selectRows(conn, sql);
 	}
 
 }

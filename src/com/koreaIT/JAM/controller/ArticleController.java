@@ -29,7 +29,7 @@ public class ArticleController extends Controller {
 			break;
 
 		case "list":
-			this.articleList();
+			this.articleList(cmd);
 			break;
 
 		case "detail":
@@ -57,19 +57,31 @@ public class ArticleController extends Controller {
 
 	}
 
-	private void articleList() {
-		List<Article> articleList = articleService.articleList();
+	private void articleList(String cmd) {
 
-		if (articleList.size() == 0) {
-			System.out.println("게시글이 존재하지 않습니다.");
+		String search = cmd.substring("article list".length()).trim();
+
+		List<Article> foundArticle = articleService.articleList(search);
+
+		if (search.length() > 0) {
+			System.out.println("검색어 : " + search);
+			if (foundArticle.size() == 0) {
+				System.out.println("검색결과가 존재하지 않습니다");
+				return;
+			}
+		}
+
+		if (foundArticle.size() == 0) {
+			System.out.println("게시물이 존재하지 않습니다");
 			return;
 		}
 
 		System.out.println("글번호 \t 글 제목 \t 작성자 \t 작성일자 \t 조회수");
 
-		for (Article article : articleList)
+		for (Article article : foundArticle)
 			System.out.printf("%s \t %s \t %s \t %s \t %s\n", article.getArticleId(), article.getTitle(),
 					article.getWriter(), Util.datetimeFormat(article.getUpdateDate()), article.getViewCount());
+
 	}
 
 	private void articleDetail(String cmd) {
